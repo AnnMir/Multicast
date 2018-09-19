@@ -1,17 +1,18 @@
 import javax.swing.*;
 import java.io.IOException;
 import java.net.*;
-import java.net.Inet4Address;
-import java.net.Inet6Address;
 
 public class Main {
-    public static final int BUFFER_SIZE = 1000;
     public static void main(String args[]){
         int port = 55555;
+        int Multicast_port = 50000;
+        DatagramSocket Datagramsocket = null;
         MulticastSocket socket = null;
         InetAddress groupIP = null;
+        InetAddress LocalIp = null;
         try {
             groupIP = InetAddress.getByName(args[0]);
+            LocalIp = InetAddress.getByName(args[1]);
         } catch (UnknownHostException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Введен некорректный IP. Используйте следующий формат: " +"\n" +
@@ -19,7 +20,7 @@ public class Main {
                     "Или 'х.х.х.х.х.х.х.х' где х шестнадцатеричное 16-битное число, \nкоторое состоит из 4 символов в шестнадцатеричной системе для IPv6\n");
         }
         try {
-            socket = new MulticastSocket(port);
+            socket = new MulticastSocket(Multicast_port);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -35,10 +36,17 @@ public class Main {
                 JOptionPane.showMessageDialog(null, "Entered IP is not a multicast address");
                 System.exit(1);
             }
-            Runnable sender = new Sender(socket,port,groupIP);
-            new Thread(sender).start();
-            Runnable receiver = new Receiver(socket,port,groupIP);
-            new Thread(receiver).start();
+        try {
+            Datagramsocket = new DatagramSocket(port, InetAddress.getByName(args[1]));
+        } catch (SocketException e) {
+            e.printStackTrace();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
 
+        Runnable sender = new Sender(Datagramsocket,Multicast_port,groupIP);
+            new Thread(sender).start();
+            Runnable receiver = new Receiver(socket,port, LocalIp);
+            new Thread(receiver).start();
     }
 }

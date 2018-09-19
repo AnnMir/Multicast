@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.time.LocalTime;
@@ -7,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Receiver implements Runnable {
-    public static final int BUFFER_SIZE = 1000;
     LocalTime LT;
     public static MulticastSocket socket;
     public static int port;
@@ -35,24 +35,18 @@ public class Receiver implements Runnable {
                     ":" + pack.getPort() + " with length: " +
                     pack.getLength());
             System.out.write(pack.getData(), 0, pack.getLength());
-            System.out.println(LT.now());
-            if(!alive.containsKey(pack.getAddress())){
+            //if(!alive.containsKey(pack.getAddress())){
                 alive.put(pack.getAddress(), LT.now());
-            }
 
             for (Map.Entry<InetAddress, LocalTime> tmp : alive.entrySet()) {
-                /*if(LT.now().isAfter(tmp.getValue().plusMinutes(1))){
+                if(LT.now().isAfter(tmp.getValue().plusMinutes(1))){
                     alive.remove(tmp.getKey(),tmp.getValue());
-                    System.out.println("removing...");
-                }*/
-                if(LT.now().compareTo(tmp.getValue())>2){
-                    alive.remove(tmp.getKey(),tmp.getValue());
-                    System.out.println("removing...");
+                    System.out.println("\nremoving...");
                 }
             }
 
             for (Map.Entry<InetAddress, LocalTime> tmp : alive.entrySet()) {
-                System.out.println(tmp.getKey().toString() + "  " + tmp.getValue().toString());
+                System.out.println("\n"+tmp.getKey().toString() + "  " + tmp.getValue().toString());
             }
         }
     }
